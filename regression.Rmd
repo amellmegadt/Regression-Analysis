@@ -1,0 +1,96 @@
+---
+title: "Regression Analysis For House Price in Chicago"
+author: "Amellia Megadita Pratiwi"
+date: '2023-05-30'
+output: html_document
+---
+
+```{r}
+data1 = read.csv("D:/Porto/Regression/realest.csv")
+View(data1)
+df = as.data.frame(data1)
+```
+
+```{r}
+#deleting missing values in dataset
+library(dplyr)
+dfnew = data.frame(data1) %>% 
+  filter(!is.na(Space)) %>%
+  filter(!is.na(Lot)) %>%
+  filter(!is.na(Tax))
+```
+
+```{r}
+#Make regression model with 7 independent variables 
+reghouse = lm(Price~Bedroom+Space+Room+Lot+Tax+Bathroom+Garage, data= dfnew)
+summary(reghouse)
+```
+
+```{r}
+#Asumptions
+#Non Multicolinearity
+library(car)
+Vifval = vif(reghouse)
+Vifval
+#Residual normality
+res = resid(reghouse)
+library(tseries)
+jarque.bera.test(res)
+#Homoscedasticity
+bptest(reghouse)
+#No autocorrelation
+dwtest(reghouse)
+```
+Heteroscedasticity problem was founded, then we'll check which variable causes
+the heteroscedasticity problem
+
+```{r}
+#define all the independent variable
+x1 = dfnew$Bedroom
+x2 = dfnew$Space
+x3 = dfnew$Room
+x4 = dfnew$Lot
+x5 = dfnew$Tax
+x6 = dfnew$Bathroom
+x7 = dfnew$Garage
+```
+
+```{r}
+#Make a linear regression model between residual of square and all independent variable
+ressqr = res^2
+as.data.frame(res1)
+bptest = lm(res1 ~ x1+x2+x3+x4+x5+x6+x7)
+summary(bptest)
+```
+X4, X5, x7 are three variables that affect to residual of square, to make it 
+simple for this project i'll try to delete that three variabel one by one. 
+Based on the first model we get that tax (X5) doesn't affect to price (Y).
+So i'll not include tax in the model. But remove the X5 variable yet
+overcome the problem of heteroscedasticity therefore I try to delete the 
+variable Lot(X4) insetad of the variable garage (X7), because X7 has more influence 
+on the price. So finally i use 5 variables
+```{r}
+library(lmtest)
+reghouse2 = lm(Price~Bedroom+Space+Room+Bathroom+Garage, data= dfnew)
+```
+```{r}
+summary(reghouse2)
+```
+
+```{r}
+#Asumption test
+#Multicolinearity
+library(car)
+Vifval2 = vif(reghouse2)
+Vifval2
+#normal residual
+res2 = resid(reghouse2)
+library(tseries)
+jarque.bera.test(res2)
+#Homoscedasticity
+bptest(reghouse2)
+#Autocorrelation
+dwtest(reghouse2)
+
+```
+
